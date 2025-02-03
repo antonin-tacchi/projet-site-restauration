@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données
-$conn = new PDO("mysql:host=localhost;dbname=site_restauration", "root", "");
+$conn = new PDO("mysql:host=localhost;dbname=site-restauration", "root", "");
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 // Récupérer tous les menus avec leurs plats associés
@@ -68,90 +68,94 @@ if (isset($_POST['supprimé'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Restaurant</title>
 </head>
-<body>
-
-<!-- Header -->
 <header>
-    <h1>Bienvenue au Restaurant</h1>
+    <a href="index.php" class="text-header"><h2>Déconnection</h2></a>
+    <a href="plat.php"><h2 class="text-header">Plat</h2></a>
+    <a href="menu.php"><h2 class="text-header">Menu</h2></a>
+    <a href="creation.php"><h2 class="text-header">Création</h2></a>
+
 </header>
+<body>
 
 <!-- Body -->
 <main>
+    <!-- Formulaire pour ajouter un nouveau menu -->
+    <section class="container-form-menu">
+        <div class="form-menu">
+            <h2>Ajouter un Nouveau Menu</h2>
+            <form method="POST">
+                <input type="text" name="nom_menu" placeholder="Nom du menu" required class="champ-index2">
+                <input type="number" step="0.01" name="prix_menu" placeholder="Prix" required class="champ-index2">
+
+                <label for="categorie_menu">Choisissez une catégorie :</label>
+                <select name="categorie_menu" onchange="this.form.submit()" required class="select-champ-4">
+                    <option value="">Sélectionner une catégorie</option>
+                    <?php foreach ($categories as $categorie): ?>
+                        <option value="<?php echo $categorie['id']; ?>" <?php if (isset($_POST['categorie_menu']) && $_POST['categorie_menu'] == $categorie['id']) echo 'selected'; ?>>
+                            <?php echo htmlspecialchars($categorie['nom_categorie']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+
+                <?php if (!empty($plats_disponibles)): ?>
+                    <label for="plats_menu">Plats disponibles :</label>
+                    <select name="plats_menu[]" multiple required>
+                        <?php foreach ($plats_disponibles as $plat): ?>
+                            <option value="<?php echo $plat['id']; ?>"><?php echo htmlspecialchars($plat['nom_plat']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
+
+                <button type="submit" name="ajouter_menu">Ajouter Menu</button>
+            </form>
+        </div>
+        <div class="form-menu">
+            <form action="" method="post" class="form-menu-delete">
+                <h2>Supprimer un menu</h2>
+                <label for="nom_menu">Nom du plat</label>
+                <select name="nom_menu" class="select-champ-4">
+                <option value="">Sélectionner un menu</option>
+                    <?php
+                    $categories = $conn->query('SELECT nom_menu FROM menu');
+                    while ($categorie = $categories->fetch()) {
+                        echo '<option value="' . htmlspecialchars($categorie['nom_menu']) . '">' . htmlspecialchars($categorie['nom_menu']) . '</option>';
+                    }
+                    ?>
+                </select>
+                <br>
+                <button type="submit" name="supprimé" class="suppr">Supprimer</button>
+            </form>
+        </div>
+    </section>
     <!-- Affichage des cartes de menu -->
-    <section>
-        <h2>Menus Disponibles</h2>
+    <h2>Menus Disponibles</h2>
+    <section class="container-menu">
         <?php foreach ($menus as $menu): ?>
             <div class="menu-card">
-                <h3><?php echo htmlspecialchars($menu['nom_menu']); ?></h3>
-                <p>Prix : <?php echo htmlspecialchars($menu['prix_menu']); ?>€</p>
+                <h2 class="nom_menu"><?php echo htmlspecialchars($menu['nom_menu']); ?></h2>
+                <p class="prix_menu">Prix : <?php echo htmlspecialchars($menu['prix_menu']); ?>€</p>
 
                 <!-- Affichage des plats associés au menu -->
-                <h4>Plats :</h4>
-                <ul>
+                <h4 class="plat">Plats :</h4>
+                <ul class="image-nom">
                     <?php foreach ($plats[$menu['id']] as $plat): ?>
                         <li>
-                            <p><strong><?php echo htmlspecialchars($plat['nom_plat']); ?></strong></p>
-                            <img src="<?php echo htmlspecialchars($plat['image_plat']); ?>" alt="<?php echo htmlspecialchars($plat['nom_plat']); ?>" width="200">
-                            <p><em>Description : <?php echo htmlspecialchars($plat['description_plat']); ?></em></p>
+                            <h3><strong><?php echo htmlspecialchars($plat['nom_plat']); ?></strong></h3>
+                            <img src="<?php echo htmlspecialchars($plat['image_plat']); ?>" alt="<?php echo htmlspecialchars($plat['nom_plat']); ?>" width="200" class="image-plat">
                         </li>
                     <?php endforeach; ?>
                 </ul>
+            </div>
         <?php endforeach; ?>
-    </section>
-
-    <!-- Formulaire pour ajouter un nouveau menu -->
-    <section>
-        <h2>Ajouter un Nouveau Menu</h2>
-        <form method="POST">
-            <input type="text" name="nom_menu" placeholder="Nom du menu" required>
-            <input type="number" step="0.01" name="prix_menu" placeholder="Prix" required>
-
-            <label for="categorie_menu">Choisissez une catégorie :</label>
-            <select name="categorie_menu" onchange="this.form.submit()" required>
-                <option value="">Sélectionner une catégorie</option>
-                <?php foreach ($categories as $categorie): ?>
-                    <option value="<?php echo $categorie['id']; ?>" <?php if (isset($_POST['categorie_menu']) && $_POST['categorie_menu'] == $categorie['id']) echo 'selected'; ?>>
-                        <?php echo htmlspecialchars($categorie['nom_categorie']); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <?php if (!empty($plats_disponibles)): ?>
-                <label for="plats_menu">Plats disponibles :</label>
-                <select name="plats_menu[]" multiple required>
-                    <?php foreach ($plats_disponibles as $plat): ?>
-                        <option value="<?php echo $plat['id']; ?>"><?php echo htmlspecialchars($plat['nom_plat']); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            <?php endif; ?>
-
-            <button type="submit" name="ajouter_menu">Ajouter Menu</button>
-        </form>
-        <form action="" method="post" class="form-menu-delete">
-            <h2>Supprimer un menu</h2>
-            <label for="nom_menu">Nom du plat</label>
-            <select name="nom_menu" class="select-champ">
-            <option value="">Sélectionner un menu</option>
-                <?php
-                $categories = $conn->query('SELECT nom_menu FROM menu');
-                while ($categorie = $categories->fetch()) {
-                    echo '<option value="' . htmlspecialchars($categorie['nom_menu']) . '">' . htmlspecialchars($categorie['nom_menu']) . '</option>';
-                }
-                ?>
-            </select>
-            <br>
-            <button type="submit" name="supprimé" class="suppr">Supprimer</button>
-        </form>
     </section>
 </main>
 
-
-<!-- Footer -->
-<footer>
-    <p>© 2025 Restaurant</p>
-</footer>
-
 </body>
+<footer>
+    <p class="text-footer1">© Touts droits réservé ©</p>
+    <p class="text-footer2">Site de restauration</p>
+</footer>
 </html>
